@@ -9,6 +9,7 @@ const {
 const Joi = require("joi");
 
 const router = express.Router();
+
 const contactSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
@@ -17,7 +18,9 @@ const contactSchema = Joi.object({
 
 router.get("/", async (req, res, next) => {
   try {
+    console.log("Received request to fetch contacts");
     const contacts = await listContacts();
+    console.log("Sending response with contacts:", contacts);
     res.status(200).json(contacts);
   } catch (error) {
     next(error);
