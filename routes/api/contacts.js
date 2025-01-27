@@ -8,6 +8,7 @@ const {
   updateStatusContact,
 } = require("../../models/contacts");
 const Joi = require("joi");
+const authenticate = require("../../middlewares/authenticate");
 
 const router = express.Router();
 
@@ -20,6 +21,8 @@ const contactSchema = Joi.object({
 const favoriteSchema = Joi.object({
   favorite: Joi.boolean().required(),
 });
+
+router.use(authenticate);
 
 router.get("/", async (req, res, next) => {
   try {
