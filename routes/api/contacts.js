@@ -26,7 +26,7 @@ router.use(authenticate);
 
 router.get("/", async (req, res, next) => {
   try {
-    const contacts = await listContacts();
+    const contacts = await listContacts({ owner: req.user._id });
     res.status(200).json(contacts);
   } catch (error) {
     next(error);
