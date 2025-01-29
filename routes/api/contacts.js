@@ -8,6 +8,7 @@ const {
   updateStatusContact,
 } = require("../../models/contacts");
 const Joi = require("joi");
+const authenticate = require("../../middlewares/authenticate");
 
 const router = express.Router();
 
@@ -21,9 +22,11 @@ const favoriteSchema = Joi.object({
   favorite: Joi.boolean().required(),
 });
 
+router.use(authenticate);
+
 router.get("/", async (req, res, next) => {
   try {
-    const contacts = await listContacts();
+    const contacts = await listContacts({ owner: req.user._id });
     res.status(200).json(contacts);
   } catch (error) {
     next(error);
