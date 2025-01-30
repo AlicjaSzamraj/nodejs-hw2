@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const Joi = require("joi");
+const gravatar = require("gravatar");
 require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -26,10 +27,12 @@ const register = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const avatarURL = gravatar.url(email);
 
     const newUser = new User({
       email,
       password: hashedPassword,
+      avatarURL,
     });
     await newUser.save();
 
@@ -37,6 +40,7 @@ const register = async (req, res, next) => {
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
+        avatarURL: newUser.avatarURL,
       },
     });
   } catch (error) {
