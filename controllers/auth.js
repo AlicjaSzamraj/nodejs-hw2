@@ -32,6 +32,7 @@ const register = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
     const verificationToken = uuidv4();
+    console.log("Generated verificationToken:", verificationToken); // Logujemy generowanie tokenu
 
     const newUser = new User({
       email,
@@ -40,7 +41,9 @@ const register = async (req, res, next) => {
       verificationToken,
     });
     await newUser.save();
+    console.log("Saved newUser with verificationToken:", newUser); // Logujemy zapisanie nowego użytkownika
 
+    // Wyślij email weryfikacyjny
     sendVerificationEmail(email, verificationToken);
 
     res.status(201).json({

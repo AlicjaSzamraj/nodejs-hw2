@@ -25,4 +25,28 @@ const updateAvatar = async (req, res, next) => {
   }
 };
 
-module.exports = { updateAvatar };
+const verifyEmail = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    console.log("Received verificationToken:", verificationToken);
+
+    const user = await User.findOne({ verificationToken });
+    console.log("Found user:", user);
+
+    if (!user) {
+      console.log("User not found with token:", verificationToken);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.verify = true;
+    user.verificationToken = null;
+    await user.save();
+
+    res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+    console.error("Error in verifyEmail function:", error);
+    next(error);
+  }
+};
+
+module.exports = { updateAvatar, verifyEmail };
