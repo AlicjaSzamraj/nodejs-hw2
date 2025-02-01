@@ -3,9 +3,12 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const Joi = require("joi");
 const gravatar = require("gravatar");
+const { v4: uuidv4 } = require("uuid");
+const sgMail = require("@sendgrid/mail");
 require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const registerSchema = Joi.object({
   email: Joi.string().email().required(),
@@ -28,13 +31,19 @@ const register = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
+    const verificationToken = uuidv4();
+    console.log("Generated verificationToken:", verificationToken);
 
     const newUser = new User({
       email,
       password: hashedPassword,
       avatarURL,
+      verificationToken,
     });
     await newUser.save();
+    console.log("Saved newUser with verificationToken:", newUser);
+
+    sendVerificationEmail(email, verificationToken);
 
     res.status(201).json({
       user: {
@@ -63,8 +72,10 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Email or password is wrong" });
+    if (!user || !user.verify) {
+      return res
+        .status(401)
+        .json({ message: "Email or password is wrong or email not verified" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -115,6 +126,21 @@ const current = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+const sendVerificationEmail = (email, token) => {
+  const msg = {
+    to: email,
+    from: "alicja.szamraj@gmail.com",
+    subject: "Email Verification",
+    text: `Please verify your email by clicking the following link: http://localhost:3000/api/users/verify/${token}`,
+    html: `<strong>Please verify your email by clicking the following link: <a href="http://localhost:3000/api/users/verify/${token}">Verify Email</a></strong>`,
+  };
+
+  sgMail.send(msg).then(
+    () => console.log("Email sent"),
+    (error) => console.error(error)
+  );
 };
 
 module.exports = { register, login, logout, current };
