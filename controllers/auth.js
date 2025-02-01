@@ -32,7 +32,7 @@ const register = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
     const verificationToken = uuidv4();
-    console.log("Generated verificationToken:", verificationToken); // Logujemy generowanie tokenu
+    console.log("Generated verificationToken:", verificationToken);
 
     const newUser = new User({
       email,
@@ -41,9 +41,8 @@ const register = async (req, res, next) => {
       verificationToken,
     });
     await newUser.save();
-    console.log("Saved newUser with verificationToken:", newUser); // Logujemy zapisanie nowego użytkownika
+    console.log("Saved newUser with verificationToken:", newUser);
 
-    // Wyślij email weryfikacyjny
     sendVerificationEmail(email, verificationToken);
 
     res.status(201).json({
@@ -134,8 +133,8 @@ const sendVerificationEmail = (email, token) => {
     to: email,
     from: "alicja.szamraj@gmail.com",
     subject: "Email Verification",
-    text: `Please verify your email by clicking the following link: http://localhost:3000/users/verify/${token}`,
-    html: `<strong>Please verify your email by clicking the following link: <a href="http://localhost:3000/users/verify/${token}">Verify Email</a></strong>`,
+    text: `Please verify your email by clicking the following link: http://localhost:3000/api/users/verify/${token}`,
+    html: `<strong>Please verify your email by clicking the following link: <a href="http://localhost:3000/api/users/verify/${token}">Verify Email</a></strong>`,
   };
 
   sgMail.send(msg).then(
